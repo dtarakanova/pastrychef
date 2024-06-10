@@ -1,5 +1,7 @@
 package org.example.model;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
@@ -7,6 +9,11 @@ import java.util.List;
 @Data
 
 public class Cake {
+    @NotNull
+    @Size(min=4, message ="Please give name to your cake")
     private String inscription;
+
+    @NotNull
+    @Size(min=1, message = "Please choose at least one ingredient")
     private List<Ingredient> ingredients;
 }

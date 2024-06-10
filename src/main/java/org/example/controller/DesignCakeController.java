@@ -1,58 +1,55 @@
 package org.example.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.example.model.Cake;
 import org.example.model.Ingredient;
-import org.example.model.Order;
+import org.example.model.Ingredient.Type;
+import org.example.model.CakeOrder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.example.model.Ingredient.Type.*;
-
 @Slf4j
 @Controller
-@RequestMapping("/designcake")
+@RequestMapping("/design")
 @SessionAttributes("cakeOrder")
 
 public class DesignCakeController {
 @ModelAttribute
     public void addIngredientsToModel (Model model) {
     List<Ingredient> ingredients = Arrays.asList(
-            new Ingredient("CHCK", "Cheesecake", FILLING),
-            new Ingredient("BLFO", "Black Forrest", FILLING),
-            new Ingredient("STCR", "Strawberry Cream", FILLING),
-            new Ingredient("CARR", "Carrot Cake", FILLING),
-            new Ingredient("PRAL", "Praline", FILLING),
-            new Ingredient("WHIT","White", ICING),
-            new Ingredient("PINK","Pink", ICING),
-            new Ingredient("BLUE","Blue", ICING),
-            new Ingredient("YELL","Yellow", ICING),
-            new Ingredient("YELL","Green", ICING),
-            new Ingredient("SMLL", "2KG", WEIGHT),
-            new Ingredient("MEDI", "4KG", WEIGHT),
-            new Ingredient("LARG", "6KG", WEIGHT)
+            new Ingredient("CHCK", "Cheesecake", Type.FILLING),
+            new Ingredient("BLFO", "Black Forrest", Type.FILLING),
+            new Ingredient("STCR", "Strawberry Cream", Type.FILLING),
+            new Ingredient("CARR", "Carrot Cake", Type.FILLING),
+            new Ingredient("PRAL", "Praline", Type.FILLING),
+            new Ingredient("WHIT","White", Type.ICING),
+            new Ingredient("PINK","Pink", Type.ICING),
+            new Ingredient("BLUE","Blue", Type.ICING),
+            new Ingredient("YELL","Yellow", Type.ICING),
+            new Ingredient("GREN","Green", Type.ICING),
+            new Ingredient("SMLL", "2 kg", Type.WEIGHT),
+            new Ingredient("MEDI", "4 kg", Type.WEIGHT),
+            new Ingredient("LARG", "6 kg", Type.WEIGHT)
             );
 
     //Фильтруем ингр-ты по типам:
-
-    Ingredient.Type[] types = values();
-    for (Ingredient.Type type : types) {
+    Type[] types = Ingredient.Type.values();
+    for (Type type : types) {
         model.addAttribute(type.toString().toLowerCase(),
                 filterByType(ingredients, type));
     }
 }
 
 @ModelAttribute(name = "cakeOrder")
-public Order order() {
-    return new Order();
+public CakeOrder order() {
+    return new CakeOrder();
 }
 
 @ModelAttribute(name = "cake")
@@ -66,7 +63,17 @@ public String showDesignForm() {
 }
 
 
-    private Object filterByType(List<Ingredient> ingredients, Ingredient.Type type) {
+@PostMapping
+public String processCake(@Valid Cake cake, Errors errors, @ModelAttribute CakeOrder cakeOrder) {
+    if(errors.hasErrors()) {
+        return "designform";
+    }
+    cakeOrder.addCake(cake);
+    log.info("Processing cake: {}", cake);
+    return "redirect:/orders/current";
+}
+
+    private Iterable<Ingredient> filterByType(List<Ingredient> ingredients, Type type) {
     return ingredients
             .stream()
             .filter(x -> x.getType().equals(type))
