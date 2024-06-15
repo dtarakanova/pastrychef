@@ -17,7 +17,6 @@ public class Cake {
     @Size(min=4, message ="Please give name to your cake")
     private String inscription;
 
-    //Сейчас можно выбрать несколько вариантов в одном типе ингр-та - исправить
     @NotNull
     @Size(min=1, message = "Please choose at least one ingredient")
     private List<Ingredient> ingredients;

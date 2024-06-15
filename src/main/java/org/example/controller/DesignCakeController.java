@@ -33,18 +33,17 @@ public DesignCakeController (IngredientRepository ingredientRepository) {
 
 @GetMapping
     public String showDesignForm(Model model) {
-        List<Ingredient> ingredients = new ArrayList<>();
-        ingredientRepository.findAll().forEach(i -> ingredients.add(i));
 
-        Type[] types = Ingredient.Type.values();
-        for(Type type : types){
-            model.addAttribute(type.toString().toLowerCase(),
-                    filterByType(ingredients, type));
+    List<Ingredient> ingredients = new ArrayList<>();
+    ingredientRepository.findAll().forEach(i -> ingredients.add(i));
+    Type[] types = Ingredient.Type.values();
+    for(Type type : types){
+        model.addAttribute(type.toString().toLowerCase(),
+                filterByType(ingredients, type));
         }
-        model.addAttribute("designform", new Cake());
+        //model.addAttribute("designform", new Cake());
         return "designform";
 }
-
 
 
 @ModelAttribute(name = "cakeOrder")
@@ -58,16 +57,12 @@ public Cake cake() {
 }
 
 
-
-
-
-
 @PostMapping
-public String processCake(@Valid Cake cake, Errors errors, @ModelAttribute CakeOrder cakeOrder) {
+public String processCake(@Valid Cake cake, Errors errors, @ModelAttribute CakeOrder order) {
     if(errors.hasErrors()) {
         return "designform";
     }
-    cakeOrder.addCake(cake);
+    order.addCake(cake);
     log.info("Processing cake: {}", cake);
     return "redirect:/orders/current";
 }
