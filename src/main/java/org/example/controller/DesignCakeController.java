@@ -6,12 +6,14 @@ import org.example.model.Cake;
 import org.example.model.Ingredient;
 import org.example.model.Ingredient.Type;
 import org.example.model.CakeOrder;
+import org.example.repository.IngredientRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,31 +23,29 @@ import java.util.stream.Collectors;
 @SessionAttributes("cakeOrder")
 
 public class DesignCakeController {
-@ModelAttribute
-    public void addIngredientsToModel (Model model) {
-    List<Ingredient> ingredients = Arrays.asList(
-            new Ingredient("CHCK", "Cheesecake", Type.FILLING),
-            new Ingredient("BLFO", "Black Forrest", Type.FILLING),
-            new Ingredient("STCR", "Strawberry Cream", Type.FILLING),
-            new Ingredient("CARR", "Carrot Cake", Type.FILLING),
-            new Ingredient("PRAL", "Praline", Type.FILLING),
-            new Ingredient("WHIT","White", Type.ICING),
-            new Ingredient("PINK","Pink", Type.ICING),
-            new Ingredient("BLUE","Blue", Type.ICING),
-            new Ingredient("YELL","Yellow", Type.ICING),
-            new Ingredient("GREN","Green", Type.ICING),
-            new Ingredient("SMLL", "2 kg", Type.WEIGHT),
-            new Ingredient("MEDI", "4 kg", Type.WEIGHT),
-            new Ingredient("LARG", "6 kg", Type.WEIGHT)
-            );
 
-    //Фильтруем ингр-ты по типам:
-    Type[] types = Ingredient.Type.values();
-    for (Type type : types) {
-        model.addAttribute(type.toString().toLowerCase(),
-                filterByType(ingredients, type));
-    }
+private final IngredientRepository ingredientRepository;
+@Autowired
+public DesignCakeController (IngredientRepository ingredientRepository) {
+    this.ingredientRepository = ingredientRepository;
+
 }
+
+@GetMapping
+    public String showDesignForm(Model model) {
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredientRepository.findAll().forEach(i -> ingredients.add(i));
+
+        Type[] types = Ingredient.Type.values();
+        for(Type type : types){
+            model.addAttribute(type.toString().toLowerCase(),
+                    filterByType(ingredients, type));
+        }
+        model.addAttribute("designform", new Cake());
+        return "designform";
+}
+
+
 
 @ModelAttribute(name = "cakeOrder")
 public CakeOrder order() {
@@ -57,10 +57,9 @@ public Cake cake() {
     return new Cake();
 }
 
-@GetMapping
-public String showDesignForm() {
-    return "designform";
-}
+
+
+
 
 
 @PostMapping
